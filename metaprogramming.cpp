@@ -10,35 +10,42 @@ struct t_abs {
 };
 
 //EXAMPLE 2:
-template<typename T>
-struct dimof {
-	static constexpr int value = 0;
+template<int VAL>
+struct set_int {
+	static constexpr int value = VAL;
 };
+template<typename T>
+struct dimof : set_int<0> {};
 
 template<typename T, int N>
-struct dimof<T[N]> {
-	static constexpr int value = 1 + dimof<T>::value;
-};
+struct dimof<T[N]> :set_int<1 + dimof<T>::value>{};
 
 //EXAMPLE 3:
+//added to refactor
 template<typename T>
-struct remove_const {
+struct set_type {
 	using type = T;
 };
+template<typename T>
+struct remove_const : set_type<T>{};
 
 template<typename T>
-struct remove_const<const T> {
-	using type = T;
-};
+struct remove_const<const T> : set_type<T>{};
+
+template<typename T>
+using remove_const_t = typename remove_const<T>::type;
+
+template<typename T>
+constexpr int dimof_v = dimof<T>::value;
 
 int main() {
 	//Example 1
 	std::cout << t_abs<-5>::value << std::endl;
 	//Example 2
-	std::cout << dimof<int>::value << std::endl;
-	std::cout << dimof<int[44]>::value << std::endl;
-	std::cout << dimof<char[33][66]>::value << std::endl;
-	std::cout << dimof<float[3][9][99]>::value << std::endl;
+	std::cout << dimof_v<int> << std::endl;
+	std::cout << dimof_v<int[44]> << std::endl;
+	std::cout << dimof_v<char[33][66]> << std::endl;
+	std::cout << dimof_v<float[3][9][99]> << std::endl;
 	//Example 3
-	static_assert(std::is_same<remove_const<const int>::type,int>::value);
+	static_assert(std::is_same_v<remove_const_t<const int>,int>);
 }
